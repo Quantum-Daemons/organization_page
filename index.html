@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- DRAFT (2026-10-25). Before publishing on GitHub Pages: remove the noindex line, fill the two highlighted placeholders in the footer (review date, AI-use note), and consider self-hosting the fonts. Publish the media/ folder (Protocol Lab video as MP4 and WebM, and its poster) next to this file. Chart colours were checked with a palette validator against the panel colour in both themes. -->
+<meta name="robots" content="noindex">
+<title>Quantum Daemons</title>
+<meta name="description" content="Quantum Daemons measures and tests hybrid post-quantum (PQC) and quantum key distribution (QKD) setups in open-source VPN and key-management software, and publishes the code and counting rules behind each result.">
+<!-- Before publishing, consider self-hosting these two font families (privacy for EU visitors). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3F5F7;     /* lab bench white */
+    --panel: #FFFFFF;
+    --ink: #16202A;       /* rack charcoal */
+    --ink-2: #4B5866;
+    --rule: #D3D9E0;
+    --fiber: #F2C230;     /* single-mode jacket yellow: lines only, never text */
+    --pulse: #FFF7D1;
+    --apc: #127A55;       /* APC connector green */
+    --upc: #1F4FB8;       /* UPC connector blue: links */
+    /* Chart colours, checked with the dataviz palette validator against --panel */
+    --viz-before: #86b6ef; /* ordinal pair, light: before (2.11:1, labelled) */
+    --viz-after: #1c5cab;  /* ordinal pair, light: after */
+    --viz-dot: #2a78d6;    /* single series */
+    --viz-axis: #C3CBD3;
+    --sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0F1419;
+      --panel: #161D24;
+      --ink: #E6EBF0;
+      --ink-2: #A3AFBB;
+      --rule: #2B3641;
+      --pulse: #FFF7D1;
+      --apc: #3DBB88;
+      --upc: #93B2FF;
+      --viz-before: #1c5cab; /* ordinal pair, dark: before (2.56:1, labelled) */
+      --viz-after: #86b6ef;
+      --viz-dot: #3987e5;
+      --viz-axis: #3A4652;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.55;
+    font-kerning: normal;
+  }
+  a { color: var(--upc); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible { outline: 3px solid var(--upc); outline-offset: 3px; border-radius: 2px; }
+  code, .id { font-family: var(--mono); font-size: 0.89em; letter-spacing: 0; }
+
+  .wrap { max-width: 1088px; margin: 0 auto; padding: 0 24px; }
+  .prose { max-width: 66ch; }
+
+  /* Header */
+  .site-head { padding: 28px 0 0; }
+  .site-head .wrap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 28px; }
+  .name { font-weight: 700; font-size: 21px; letter-spacing: -0.005em; color: var(--ink); text-decoration: none; }
+  .site-head nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; font-size: 16px; }
+
+  /* Hero */
+  .hero { padding: 64px 0 24px; }
+  h1 {
+    font-size: clamp(36px, 5.4vw, 60px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin: 0 0 24px;
+    max-width: 15ch;
+  }
+  .lead { font-size: 21px; line-height: 1.5; margin: 0 0 12px; max-width: 58ch; }
+  .lead + p { color: var(--ink-2); margin: 0; max-width: 58ch; }
+
+  /* Key-path schematic */
+  .schematic { margin: 48px 0 0; padding: 28px 28px 22px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; }
+  .schematic svg { display: block; width: 100%; height: auto; }
+  .node rect { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+  .node.sim rect { stroke-dasharray: 6 5; }
+  .node .t { font-family: var(--sans); font-weight: 700; font-size: 18px; fill: var(--ink); }
+  .node .s { font-family: var(--sans); font-size: 14.5px; fill: var(--ink-2); }
+  .node .m { font-family: var(--mono); font-size: 13.5px; fill: var(--ink-2); }
+  .fiber { fill: none; stroke: var(--fiber); stroke-width: 7; stroke-linecap: round; }
+  .pulse { fill: none; stroke: var(--pulse); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 46 2400; stroke-dashoffset: 46; opacity: 0; }
+  .ferrule { fill: var(--apc); }
+  .flag rect { fill: var(--panel); stroke: var(--ink); stroke-width: 1.2; }
+  .flag.sim rect { stroke-dasharray: 4 3; }
+  .flag text { font-family: var(--sans); font-size: 13.5px; fill: var(--ink); }
+  .flag line { stroke: var(--ink); stroke-width: 1.2; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pulse { animation: travel 1.5s cubic-bezier(.45,.05,.35,1) forwards; }
+    .pulse.p2 { animation-delay: .15s; }
+    .pulse.p3 { animation-delay: .9s; }
+    .pulse.p4 { animation-delay: 1.05s; }
+    .pulse.p5 { animation-delay: .35s; animation-duration: 2.1s; }
+    @keyframes travel {
+      0% { opacity: 1; stroke-dashoffset: 46; }
+      92% { opacity: 1; }
+      100% { opacity: 0; stroke-dashoffset: -700; }
+    }
+  }
+  .schematic figcaption { margin-top: 18px; font-size: 16px; color: var(--ink-2); max-width: 70ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 15px; color: var(--ink-2); }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .sw { display: inline-block; width: 22px; height: 14px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--panel); }
+  .sw.sim { border-style: dashed; }
+  .sw.fib { border: 0; height: 6px; border-radius: 3px; background: var(--fiber); }
+
+  /* Narrow-screen version of the schematic: one vertical fiber run */
+  .trace { display: none; }
+  @media (max-width: 820px) {
+    .schematic { padding: 20px 16px 18px; }
+    .schematic svg { display: none; }
+    .trace { display: block; }
+  }
+  .lane { margin: 0 0 22px; }
+  .lane h3 { font-size: 16px; font-weight: 700; margin: 0 0 10px; color: var(--ink-2); }
+  .lane ol { list-style: none; margin: 0; padding: 0 0 0 28px; position: relative; }
+  .lane ol::before { content: ""; position: absolute; left: 7px; top: 14px; bottom: 14px; width: 6px; border-radius: 3px; background: var(--fiber); }
+  .lane li { position: relative; margin: 0 0 10px; padding: 10px 12px; background: var(--panel); border: 1.5px solid var(--ink); border-radius: 6px; }
+  .lane li.sim { border-style: dashed; }
+  .lane li::before { content: ""; position: absolute; left: -26px; top: 16px; width: 10px; height: 14px; border-radius: 2px; background: var(--apc); }
+  .lane .t { display: block; font-weight: 700; font-size: 17px; }
+  .lane .s { display: block; font-size: 15px; color: var(--ink-2); }
+
+  /* Sections */
+  section { padding: 72px 0 0; }
+  h2 { font-size: 30px; line-height: 1.15; letter-spacing: -0.01em; font-weight: 700; margin: 0 0 18px; }
+  section > .wrap > p { max-width: 66ch; }
+  .muted { color: var(--ink-2); }
+
+  /* Evidence tags: styled like cable flag labels */
+  .tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 14.5px; line-height: 1; white-space: nowrap;
+    padding: 6px 9px 6px 8px; border: 1.3px solid var(--ink); border-radius: 4px; background: var(--panel); color: var(--ink);
+  }
+  .tag::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--ink); }
+  .tag.sim { border-style: dashed; }
+  .tag.sim::before { background: transparent; border: 1.3px dashed var(--ink); width: 7px; height: 7px; }
+  .tag.meas::before { width: 11px; height: 9px; background: linear-gradient(90deg, var(--ink) 0 1.5px, transparent 1.5px 4.5px, var(--ink) 4.5px 6px, transparent 6px 9px, var(--ink) 9px 10.5px, transparent 10.5px); }
+  .tag.merged::before { background: var(--apc); }
+  .tag.run::before { background: transparent; border: 1.3px solid var(--ink); width: 7px; height: 7px; }
+  .tag.base::before { width: 11px; height: 9px; border-radius: 0; background: linear-gradient(180deg, transparent 0 3px, var(--ink) 3px 4.5px, transparent 4.5px 6px, var(--ink) 6px 7.5px, transparent 7.5px); }
+  .after-list { margin: 18px 0 0; max-width: 66ch; }
+  .record { margin: 4px 0 0; padding: 0 0 0 1.1em; max-width: 66ch; }
+  .record li { margin: 0 0 6px; }
+  .record li::marker { color: var(--ink-2); }
+
+  /* What you can check today */
+  .register { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--rule); }
+  .register > li { display: grid; grid-template-columns: minmax(0, 1fr) 13.5em; gap: 8px 32px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  .register > li > div > h3 { font-size: 19px; line-height: 1.3; margin: 0 0 6px; }
+  .register > li > div > p { margin: 0; max-width: 62ch; }
+  .register .links { margin-top: 8px; font-size: 16px; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .register .links a { white-space: nowrap; }
+  .register .ev { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 3px; }
+  @media (max-width: 720px) {
+    .register > li { grid-template-columns: 1fr; }
+    .register .ev { flex-direction: row; flex-wrap: wrap; order: -1; padding-top: 0; }
+  }
+
+  /* Evidence figures inside the register: full row width */
+  .register .evfig { grid-column: 1 / -1; min-width: 0; margin: 4px 0 0; padding: 22px 24px 18px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; }
+  .fhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 20px; margin: 0 0 16px; }
+  .ftitle { font-weight: 700; font-size: 17px; line-height: 1.35; margin: 0; max-width: 62ch; }
+  .fsub { font-size: 15px; line-height: 1.45; color: var(--ink-2); margin: 3px 0 0; max-width: 72ch; }
+  .ftags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fkey { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 0 0 18px; padding: 0; font-size: 15px; color: var(--ink-2); }
+  .fkey li { display: flex; align-items: center; gap: 8px; }
+  .key { flex: none; display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+  .k-before { background: var(--viz-before); }
+  .k-after { background: var(--viz-after); }
+  .multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 26px 48px; }
+  .smult h4 { font-size: 16px; line-height: 1.3; margin: 0; }
+  .smult .psub { font-size: 14.5px; line-height: 1.45; color: var(--ink-2); margin: 3px 0 14px; }
+  .brow, .frow { margin: 0 0 10px; }
+  .rl { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; font-size: 15px; margin: 0 0 3px; }
+  .rl .cnt { color: var(--ink-2); }
+  [data-tip]:focus-visible { outline: 2px solid var(--upc); outline-offset: 4px; border-radius: 4px; }
+  .track { --tipw: 64px; display: flex; align-items: center; height: 26px; border-left: 1px solid var(--viz-axis); }
+  .bar { flex: none; height: 22px; width: calc((100% - var(--tipw)) * var(--w)); border-radius: 0 4px 4px 0; }
+  .bval { margin-left: 8px; font-size: 15px; font-weight: 700; white-space: nowrap; }
+  .axis { position: relative; height: 24px; margin: 4px 64px 0 0; border-top: 1px solid var(--viz-axis); font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .axis span { position: absolute; top: 5px; left: var(--x); transform: translateX(-50%); white-space: nowrap; line-height: 1; }
+  .axis span::before { content: ""; position: absolute; left: 50%; top: -10px; width: 1px; height: 5px; background: var(--viz-axis); }
+  .scale-note { margin: 4px 0 0; font-size: 14.5px; color: var(--ink-2); }
+  .forest { padding: 0 24px; }
+  .ftrack { position: relative; height: 26px; }
+  .ftrack .zero { position: absolute; top: -2px; bottom: -2px; left: var(--z); width: 1px; background: var(--viz-axis); }
+  .ftrack .ci { position: absolute; top: 12px; height: 2px; left: var(--a); width: calc(var(--b) - var(--a)); background: var(--viz-dot); border-radius: 1px; }
+  .ftrack .ci::before, .ftrack .ci::after { content: ""; position: absolute; top: -5px; width: 2px; height: 12px; background: var(--viz-dot); border-radius: 1px; }
+  .ftrack .ci::before { left: -1px; }
+  .ftrack .ci::after { right: -1px; }
+  .ftrack .pt { position: absolute; top: 13px; left: var(--x); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--viz-dot); box-shadow: 0 0 0 2px var(--panel); }
+  .forest .axis { margin-right: 0; }
+  .fdir { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+  .fdir span:last-child { margin-left: auto; }
+  .evfig video { display: block; width: 100%; max-width: 860px; height: auto; aspect-ratio: 1350 / 958; border-radius: 6px; background: #05080C; }
+  .evfig figcaption { margin: 14px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); max-width: 78ch; }
+  .evfig figcaption p { margin: 0; }
+  .evfig figcaption p + p { margin-top: 8px; }
+  .tnote { margin: 8px 0 0; font-size: 14.5px; color: var(--ink-2); }
+  .fsrc { margin: 8px 0 0; font-size: 15px; color: var(--ink-2); max-width: 78ch; }
+  .tview { margin: 14px 0 0; font-size: 15px; }
+  .tview summary { cursor: pointer; color: var(--upc); width: max-content; max-width: 100%; }
+  .tview summary:focus-visible { outline: 3px solid var(--upc); outline-offset: 3px; border-radius: 2px; }
+  .twrap { overflow-x: auto; margin: 10px 0 0; }
+  .tview table { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
+  .tview th, .tview td { text-align: left; padding: 7px 18px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .tview thead th { font-weight: 700; border-bottom-color: var(--viz-axis); }
+  .tview tbody th { font-weight: 400; color: var(--ink-2); }
+  .viz-tip { position: fixed; z-index: 10; max-width: 320px; padding: 8px 10px; font-size: 14px; line-height: 1.4; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .14); pointer-events: none; }
+  @media (max-width: 560px) {
+    .register .evfig { padding: 18px 16px 14px; }
+    .forest { padding: 0 18px; }
+  }
+
+  /* Vocabulary */
+  .vocab { margin: 8px 0 0; display: grid; grid-template-columns: 15em minmax(0, 1fr); gap: 16px 28px; max-width: 980px; }
+  .vocab dt { padding-top: 2px; }
+  .vocab dd { margin: 0; max-width: 60ch; }
+  @media (max-width: 720px) { .vocab { grid-template-columns: 1fr; gap: 6px; } .vocab dd { margin-bottom: 14px; } }
+
+  .nots { margin: 8px 0 0; padding: 0 0 0 1.1em; max-width: 66ch; }
+  .nots li { margin: 0 0 10px; }
+  .nots li::marker { color: var(--ink-2); }
+
+  .soon { margin-top: 8px; padding: 18px 20px; border: 1.5px dashed var(--rule); border-radius: 8px; max-width: 72ch; }
+  .soon p { margin: 0; }
+  .soon p + p { margin-top: 8px; }
+
+  .contact { list-style: none; margin: 8px 0 0; padding: 0; }
+  .contact li { margin: 0 0 8px; }
+  .placeholder { background: color-mix(in srgb, var(--fiber) 28%, transparent); padding: 1px 6px; border-radius: 3px; }
+
+  .site-foot { margin-top: 88px; padding: 28px 0 40px; border-top: 1px solid var(--rule); font-size: 15px; color: var(--ink-2); }
+  .site-foot p { margin: 0 0 6px; max-width: 80ch; }
+
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .wrap { padding: 0 16px; }
+    .hero { padding-top: 44px; }
+    .lead { font-size: 19px; }
+    section { padding-top: 56px; }
+    h2 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="name" href="#top" id="top">Quantum Daemons</a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="https://pqc-qkd-hybrid.daemons.jp/">Live testbed</a></li>
+        <li><a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork">Source</a></li>
+        <li><a href="https://www.linkedin.com/in/amon-koike-826013300/">LinkedIn</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <h1>Quantum-safe networking, checked in public.</h1>
+      <p class="lead">Quantum Daemons is a one-person research organization in Japan. I measure and test hybrid post-quantum (PQC) and quantum key distribution (QKD) setups in open-source VPN and key-management software, and publish the code and the counting rules behind each result so that others can check it.</p>
+      <p>It is not a consultancy. Each result states what was tested, in which versions and configuration, and how it was evidenced.</p>
+
+      <figure class="schematic" aria-labelledby="schem-cap">
+        <svg viewBox="0 0 1040 400" role="img" aria-labelledby="schem-title schem-desc">
+          <title id="schem-title">Key paths in the public PQC + QKD testbed</title>
+          <desc id="schem-desc">A simulated QKD key source and an ML-KEM-1024 plus P-384 hybrid KEM both feed arnika, which combines them with HKDF-SHA3-256. arnika supplies the WireGuard wg0 pre-shared key and the IKEv2 post-quantum preshared key used by strongSwan, which also runs an ML-KEM-768 additional key exchange. Separately, Rosenpass keys WireGuard wg1, which runs inside wg0. arnika runs at a commit from its open pull request 51, not a release. PPK rotations on the strongSwan IKEv2 lane were measured before and after that pull request.</desc>
+
+          <!-- fibers -->
+          <path class="fiber" d="M300 83 C 345 83, 340 128, 385 128"/>
+          <path class="fiber" d="M300 193 C 345 193, 340 168, 385 168"/>
+          <path class="fiber" d="M647 128 C 692 128, 695 83, 740 83"/>
+          <path class="fiber" d="M647 168 C 692 168, 695 193, 740 193"/>
+          <path class="fiber" d="M300 343 L 740 343"/>
+          <!-- one light pulse per fiber, once, on load -->
+          <path class="pulse p1" d="M300 83 C 345 83, 340 128, 385 128"/>
+          <path class="pulse p2" d="M300 193 C 345 193, 340 168, 385 168"/>
+          <path class="pulse p3" d="M647 128 C 692 128, 695 83, 740 83"/>
+          <path class="pulse p4" d="M647 168 C 692 168, 695 193, 740 193"/>
+          <path class="pulse p5" d="M300 343 L 740 343"/>
+
+          <!-- nodes -->
+          <g class="node sim">
+            <rect x="10" y="40" width="290" height="86" rx="6"/>
+            <text class="t" x="26" y="70">QKD key source</text>
+            <text class="s" x="26" y="94">simulated link</text>
+            <text class="s" x="26" y="114">ETSI GS QKD 014-style API</text>
+          </g>
+          <g class="node">
+            <rect x="10" y="150" width="290" height="86" rx="6"/>
+            <text class="t" x="26" y="180">ML-KEM-1024 + P-384</text>
+            <text class="s" x="26" y="204">hybrid KEM through HPKE</text>
+            <text class="s" x="26" y="224">(in arnika PR #51)</text>
+          </g>
+          <g class="node">
+            <rect x="385" y="88" width="262" height="120" rx="6"/>
+            <text class="t" x="401" y="122">arnika</text>
+            <text class="s" x="401" y="146">combines both key sources</text>
+            <text class="m" x="401" y="172">HKDF-SHA3-256 (QKD ‖ PQC)</text>
+            <text class="s" x="401" y="196">pinned to a commit of PR #51</text>
+          </g>
+          <g class="node">
+            <rect x="740" y="40" width="290" height="86" rx="6"/>
+            <text class="t" x="756" y="70">WireGuard wg0</text>
+            <text class="s" x="756" y="94">pre-shared key from arnika</text>
+          </g>
+          <g class="node">
+            <rect x="740" y="150" width="290" height="86" rx="6"/>
+            <text class="t" x="756" y="180">strongSwan IKEv2</text>
+            <text class="s" x="756" y="204">PPK from arnika (RFC 8784)</text>
+            <text class="s" x="756" y="224">+ ML-KEM-768 (RFC 9370)</text>
+          </g>
+          <g class="node">
+            <rect x="10" y="300" width="290" height="86" rx="6"/>
+            <text class="t" x="26" y="330">Rosenpass</text>
+            <text class="s" x="26" y="354">Classic McEliece 460896 + Kyber512</text>
+          </g>
+          <g class="node">
+            <rect x="740" y="300" width="290" height="86" rx="6"/>
+            <text class="t" x="756" y="330">WireGuard wg1</text>
+            <text class="s" x="756" y="354">keyed by Rosenpass, inside wg0</text>
+          </g>
+
+          <!-- connector ferrules -->
+          <rect class="ferrule" x="300" y="75" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="300" y="185" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="374" y="120" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="374" y="160" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="647" y="120" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="647" y="160" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="729" y="75" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="729" y="185" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="300" y="335" width="11" height="16" rx="2"/>
+          <rect class="ferrule" x="729" y="335" width="11" height="16" rx="2"/>
+
+          <!-- flag labels: how a link is evidenced -->
+          <g class="flag sim">
+            <line x1="342" y1="102" x2="342" y2="24"/>
+            <rect x="300" y="2" width="86" height="22" rx="3"/>
+            <text x="309" y="18">simulated</text>
+          </g>
+          <g class="flag">
+            <line x1="694" y1="184" x2="694" y2="258"/>
+            <rect x="560" y="258" width="268" height="22" rx="3"/>
+            <text x="569" y="274">measured: PPK rotations, before and after</text>
+          </g>
+        </svg>
+
+        <div class="trace">
+          <div class="lane">
+            <h3>Combined keys</h3>
+            <ol>
+              <li class="sim"><span class="t">QKD key source</span><span class="s">Simulated link with an ETSI GS QKD 014-style API</span></li>
+              <li><span class="t">ML-KEM-1024 + P-384</span><span class="s">Hybrid KEM through HPKE (in arnika PR #51)</span></li>
+              <li><span class="t">arnika</span><span class="s">Combines both sources with <span class="id">HKDF-SHA3-256 (QKD ‖ PQC)</span>. Pinned to commit <span class="id">f4cf9ba</span> of open PR #51</span></li>
+              <li><span class="t">WireGuard wg0</span><span class="s">Pre-shared key from arnika</span></li>
+              <li><span class="t">strongSwan IKEv2</span><span class="s">PPK (RFC 8784) from arnika, plus an ML-KEM-768 additional key exchange (RFC 9370). PPK rotations measured before and after PR #51</span></li>
+            </ol>
+          </div>
+          <div class="lane">
+            <h3>Separate post-quantum handshake</h3>
+            <ol>
+              <li><span class="t">Rosenpass</span><span class="s">Classic McEliece 460896 + Kyber512</span></li>
+              <li><span class="t">WireGuard wg1</span><span class="s">Keyed by Rosenpass, runs inside wg0</span></li>
+            </ol>
+          </div>
+        </div>
+
+        <ul class="legend" aria-label="Legend">
+          <li><span class="sw" aria-hidden="true"></span>running software (versions pinned in the repository)</li>
+          <li><span class="sw sim" aria-hidden="true"></span>simulated</li>
+          <li><span class="sw fib" aria-hidden="true"></span>key path</li>
+        </ul>
+        <figcaption id="schem-cap">The public testbed. The VPN software, the post-quantum key exchanges and the key derivation run for real; the QKD layer is simulated. arnika runs at a commit from an open upstream pull request (#51), not a release. Live at <a href="https://pqc-qkd-hybrid.daemons.jp/">pqc-qkd-hybrid.daemons.jp</a>.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <section id="check" aria-labelledby="check-h">
+    <div class="wrap">
+      <h2 id="check-h">What you can check today</h2>
+      <p class="muted">Each item links to the place where it can be verified.</p>
+      <ul class="register">
+        <li>
+          <div>
+            <h3>Three fixes merged into arnika</h3>
+            <p>arnika is the open-source tool that combines QKD and post-quantum keys for VPN tunnels. I am a member of the arnika-project GitHub organization (invited by the maintainers, August 2026).</p>
+            <p class="links"><a href="https://github.com/arnika-project/arnika/pull/42">PR #42</a><a href="https://github.com/arnika-project/arnika/pull/44">PR #44</a><a href="https://github.com/arnika-project/arnika/pull/49">PR #49</a></p>
+          </div>
+          <div class="ev"><span class="tag merged">merged upstream</span></div>
+        </li>
+        <li>
+          <div>
+            <h3>Before and after: arnika PR #51</h3>
+            <p>PPK rotations on the IPsec (strongSwan) lane, recorded for 168 hours on each side of an open pull request and compared under rules fixed before the runs. The counting script and the counts are published; the container logs, which carry credential IDs and host identities, are withheld. The numbers were posted on the pull request on 12 October 2026.</p>
+            <p class="links"><a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork/tree/main/docs/measurements/2026-10-ppk-before-after">Measurement report</a><a href="https://github.com/arnika-project/arnika/pull/51#issuecomment-6117990327">Numbers on PR #51</a></p>
+          </div>
+          <div class="ev"><span class="tag meas">measured</span></div>
+          <figure class="evfig" aria-labelledby="f51-title">
+            <div class="fhead">
+              <div>
+                <p class="ftitle" id="f51-title">PPK rotation failures per 1,000 rotations, before and after arnika PR #51</p>
+                <p class="fsub">strongSwan IKEv2 lane of the public testbed. Two of the failure classes are shown; the table view lists all of them.</p>
+              </div>
+              <div class="ftags"><span class="tag meas">measured</span></div>
+            </div>
+            <ul class="fkey" aria-label="Legend">
+              <li><span class="key k-before" aria-hidden="true"></span><span>Before: arnika <span class="id">3a8cc13</span> (main), 25&nbsp;Sep–2&nbsp;Oct 2026, 168&nbsp;h</span></li>
+              <li><span class="key k-after" aria-hidden="true"></span><span>After: arnika <span class="id">f4cf9ba</span> (PR #51 as of 24&nbsp;Sep), 3–8&nbsp;Oct 2026, 121.6&nbsp;h</span></li>
+            </ul>
+            <div class="multiples">
+              <div class="smult" role="group" aria-labelledby="f51-c3">
+                <h4 id="f51-c3">Race condition (C3)</h4>
+                <p class="psub">The comparison fixed before the runs. One-sided p&nbsp;=&nbsp;9.04&nbsp;×&nbsp;10<sup>−5</sup>, exact conditional binomial test.</p>
+                <div class="brow" data-tip="Before (arnika 3a8cc13, 168 h): 31 of 20,155 PPK rotations failed from a race condition, 1.54 per 1,000. All 31 were in intervals where alice was the primary.">
+                  <div class="rl"><span>Before</span><span class="cnt">31 of 20,155</span></div>
+                  <div class="track"><span class="bar k-before" style="--w: 0.7690"></span><span class="bval">1.54</span></div>
+                </div>
+                <div class="brow" data-tip="After (arnika f4cf9ba, 121.6 h): 4 of 14,595 PPK rotations failed from a race condition, 0.27 per 1,000. All 4 were in intervals where alice was the backup.">
+                  <div class="rl"><span>After</span><span class="cnt">4 of 14,595</span></div>
+                  <div class="track"><span class="bar k-after" style="--w: 0.1370"></span><span class="bval">0.27</span></div>
+                </div>
+                <div class="axis" aria-hidden="true"><span style="--x: 0%">0</span><span style="--x: 50%">1</span><span style="--x: 100%">2</span></div>
+              </div>
+              <div class="smult" role="group" aria-labelledby="f51-c1">
+                <h4 id="f51-c1">Fail-closed invalidation (C1)</h4>
+                <p class="psub">Not part of the fixed comparison. In each, a backup interval of the node alice ended with a random PPK, and her next IKE_AUTH failed once.</p>
+                <div class="brow" data-tip="Before (arnika 3a8cc13, 168 h): none of 20,155 PPK rotations failed after a fail-closed invalidation.">
+                  <div class="rl"><span>Before</span><span class="cnt">0 of 20,155</span></div>
+                  <div class="track"><span class="bar k-before" style="--w: 0"></span><span class="bval">0</span></div>
+                </div>
+                <div class="brow" data-tip="After (arnika f4cf9ba, 121.6 h): 1,844 of 14,595 PPK rotations failed after a fail-closed invalidation, 126 per 1,000. All were in intervals where alice was the backup.">
+                  <div class="rl"><span>After</span><span class="cnt">1,844 of 14,595</span></div>
+                  <div class="track"><span class="bar k-after" style="--w: 0.8423"></span><span class="bval">126</span></div>
+                </div>
+                <div class="axis" aria-hidden="true"><span style="--x: 0%">0</span><span style="--x: 33.333%">50</span><span style="--x: 66.667%">100</span><span style="--x: 100%">150</span></div>
+              </div>
+            </div>
+            <p class="scale-note">The two panels use different scales.</p>
+            <details class="tview">
+              <summary>Table view</summary>
+              <div class="twrap">
+                <table>
+                  <thead><tr><th scope="col"></th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">arnika</th><td><span class="id">3a8cc13</span> (main)</td><td><span class="id">f4cf9ba</span> (PR #51 as of 24 Sep 2026)</td></tr>
+                    <tr><th scope="row">PQC input to arnika</th><td>a PQC key file</td><td>arnika's own PQC (HPKE, PR #51)</td></tr>
+                    <tr><th scope="row">Window (UTC)</th><td>25 Sep 10:55 to 2 Oct 10:55</td><td>3 Oct 07:04 to 8 Oct 08:42</td></tr>
+                    <tr><th scope="row">Hours in the comparison</th><td>168</td><td>121.6 (the next 46.4 excluded, reported separately)</td></tr>
+                    <tr><th scope="row">PPK rotations</th><td>20,155</td><td>14,595</td></tr>
+                    <tr><th scope="row">Race condition (C3)</th><td>31 (1.54 per 1,000)</td><td>4 (0.27 per 1,000)</td></tr>
+                    <tr><th scope="row">C3 by alice's role: primary / backup</th><td>31 / 0</td><td>0 / 4</td></tr>
+                    <tr><th scope="row">Fail-closed invalidation (C1)</th><td>0</td><td>1,844 (126.3 per 1,000)</td></tr>
+                    <tr><th scope="row">Input divergence (C4)</th><td>12 (0.60 per 1,000)</td><td>0</td></tr>
+                    <tr><th scope="row">C2, C5, unclassified</th><td>0</td><td>0</td></tr>
+                    <tr><th scope="row">All failures</th><td>43 (2.13 per 1,000)</td><td>1,848 (126.6 per 1,000)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="tnote">Only the C3 total was compared under a test fixed before the runs; every other row is descriptive.</p>
+            </details>
+            <figcaption>
+              <p>Counted from the two IPsec nodes' logs with the published script. Only the arnika commit and its PQC input changed between the arms, as fixed before the runs. The after arm also ran for 168&nbsp;h; its last 46.4&nbsp;h, from the start of an interval-number mismatch between the nodes, are excluded under the rule fixed before the runs and reported separately.</p>
+              <p>Race conditions became rarer: all 31 before were in intervals where alice was the primary, and the 4 after in intervals where she was the backup (tests by role were not fixed beforehand). 1,844 rotations failed after a fail-closed invalidation that the earlier code could not produce; such invalidations grew as the offset between the two nodes' interval boundaries widened from −30&nbsp;ms to −15&nbsp;s. The numbers were posted on the pull request on 12 October 2026. The container logs, which carry credential IDs and host identities, are withheld.</p>
+            </figcaption>
+            <p class="fsrc">Source: the <a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork/tree/main/docs/measurements/2026-10-ppk-before-after">measurement report</a> and its <a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork/blob/main/docs/measurements/2026-10-ppk-before-after/compare_A_primary_vs_B_instep_C3.txt">fixed comparison</a>.</p>
+          </figure>
+        </li>
+        <li>
+          <div>
+            <h3>The public PQC + QKD testbed</h3>
+            <p>WireGuard with Rosenpass, and strongSwan IKEv2 with ML-KEM-768 and a post-quantum preshared key, with keys from arnika. Source under Apache-2.0.</p>
+            <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/">Live testbed</a><a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork">Source</a></p>
+          </div>
+          <div class="ev"><span class="tag run">running</span><span class="tag sim">QKD simulated</span></div>
+        </li>
+        <li>
+          <div>
+            <h3>Protocol Lab</h3>
+            <p>Trusted-node QKD key relay, simulated in the browser over five networks described in four journal papers and a preprint: Cambridge, SECOQC Vienna, the Tokyo QKD Network, MadQCI and Thuringia. Reported values and model values sit in separate columns, with the source and licence of each network.</p>
+            <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/protocol-lab">Open Protocol Lab</a></p>
+          </div>
+          <div class="ev"><span class="tag sim">simulated</span></div>
+          <figure class="evfig" aria-labelledby="fpl-title">
+            <div class="fhead">
+              <div>
+                <p class="ftitle" id="fpl-title">Re-routing around a link outage in the Cambridge quantum network</p>
+                <p class="fsub">Protocol Lab, recorded in a browser. 19 seconds, no sound.</p>
+              </div>
+              <div class="ftags"><span class="tag sim">simulated</span></div>
+            </div>
+            <video controls preload="none" playsinline width="1350" height="958" poster="media/protocol-lab-cambridge-poster.png" aria-describedby="fpl-cap">
+              <source src="media/protocol-lab-cambridge.mp4" type='video/mp4; codecs="avc1.640028"'>
+              <source src="media/protocol-lab-cambridge.webm" type='video/webm; codecs="vp9"'>
+              <a href="https://pqc-qkd-hybrid.daemons.jp/protocol-lab">Open Protocol Lab</a>
+            </video>
+            <figcaption id="fpl-cap">100G encryptors between TREL and CAPE (two line-card pairs in the paper) use keys from a store that is refilled over one-time-pad tunnels along the active route (thick line). When the CAPE–TREL link goes down (red), the route goes round the ring through ENGI, which acts as a trusted relay; when the link is restored, the route returns. The order of the routes follows Dynes et al., <i>npj Quantum Information</i> 5, 101 (2019), <a href="https://doi.org/10.1038/s41534-019-0221-4">doi:10.1038/s41534-019-0221-4</a>, licensed CC&nbsp;BY&nbsp;4.0. The drawing is this project's layout, and the timing and the rates are simulated.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <div>
+            <h3>Merged work in quantum computing software</h3>
+            <p>Through unitaryHACK 2026: three merged pull requests (two in NVIDIA CUDA-Q, one in QuEST) and two bounties, $200 in total. CUDA-Q #4693 adds unitary synthesis for 3- to 5-qubit custom operations; QuEST #783 is a GPU optimization.</p>
+            <p class="links"><a href="https://github.com/NVIDIA/cuda-quantum/pull/4693">CUDA-Q #4693</a><a href="https://github.com/NVIDIA/cuda-quantum/pull/4751">CUDA-Q #4751</a><a href="https://github.com/QuEST-Kit/QuEST/pull/783">QuEST #783</a><a href="https://unitaryhack.dev/hackers/thedaemon-wizard/">unitaryHACK profile</a></p>
+          </div>
+          <div class="ev"><span class="tag merged">merged upstream</span></div>
+        </li>
+        <li>
+          <div>
+            <h3>A classical baseline for quantum-assisted PINNs</h3>
+            <p>Submission to the WISER Summer Program 2026 BQP Challenge (finalist). Quantum-assisted physics-informed neural networks against parameter-matched classical networks, 10 seeds each: no statistically significant difference in the two headline cases (Wilcoxon p&nbsp;=&nbsp;0.32 and 0.11). Report, code and results are public under MIT.</p>
+            <p class="links"><a href="https://github.com/thedaemon-wizard/QAPINN-BQP-Challenge">Repository</a><a href="https://github.com/thedaemon-wizard/QAPINN-BQP-Challenge/blob/main/results/analysis/significance/headline.csv">Significance table</a></p>
+          </div>
+          <div class="ev"><span class="tag base">classical baseline</span><span class="tag sim">simulated</span></div>
+          <figure class="evfig" aria-labelledby="fq-title">
+            <div class="fhead">
+              <div>
+                <p class="ftitle" id="fq-title">Error difference: parameter-matched classical network minus quantum-assisted network</p>
+                <p class="fsub">Relative L2 error on <i>u</i>, 10 seeds per arm. Dot: mean of the paired differences. Line: 95% paired bootstrap interval.</p>
+              </div>
+              <div class="ftags"><span class="tag base">classical baseline</span><span class="tag sim">simulated</span></div>
+            </div>
+            <div class="forest">
+              <div class="frow" data-tip="Burgers: classical 0.184 against quantum-assisted 0.156. Mean paired difference +0.029, 95% interval −0.026 to 0.080, Wilcoxon p = 0.32, 10 seeds each.">
+                <div class="rl"><span>Burgers</span><span class="cnt">+0.029 (−0.026 to 0.080), p&nbsp;=&nbsp;0.32</span></div>
+                <div class="ftrack"><span class="zero" style="--z: 33.333%"></span><span class="ci" style="--a: 16.10%; --b: 86.83%"></span><span class="pt" style="--x: 52.49%"></span></div>
+              </div>
+              <div class="frow" data-tip="Lid-driven cavity at Re = 10: classical 0.161 against quantum-assisted 0.134. Mean paired difference +0.027, 95% interval −0.00004 to 0.052, Wilcoxon p = 0.11, 10 seeds each.">
+                <div class="rl"><span>Lid-driven cavity, Re&nbsp;=&nbsp;10</span><span class="cnt">+0.027 (−0.00004 to 0.052), p&nbsp;=&nbsp;0.11</span></div>
+                <div class="ftrack"><span class="zero" style="--z: 33.333%"></span><span class="ci" style="--a: 33.31%; --b: 67.84%"></span><span class="pt" style="--x: 51.12%"></span></div>
+              </div>
+              <div class="axis" aria-hidden="true"><span style="--x: 0%">−0.05</span><span style="--x: 33.333%">0</span><span style="--x: 66.667%">0.05</span><span style="--x: 100%">0.10</span></div>
+              <div class="fdir" aria-hidden="true"><span>← classical lower error</span><span>quantum-assisted lower error →</span></div>
+            </div>
+            <details class="tview">
+              <summary>Table view</summary>
+              <div class="twrap">
+                <table>
+                  <thead><tr><th scope="col">Relative L2 error on <i>u</i></th><th scope="col">Burgers</th><th scope="col">Cavity, Re&nbsp;=&nbsp;10</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Classical, parameter-matched</th><td>0.184</td><td>0.161</td></tr>
+                    <tr><th scope="row">Quantum-assisted</th><td>0.156</td><td>0.134</td></tr>
+                    <tr><th scope="row">Mean paired difference (from unrounded values)</th><td>+0.029</td><td>+0.027</td></tr>
+                    <tr><th scope="row">95% interval</th><td>−0.026 to 0.080</td><td>−0.00004 to 0.052</td></tr>
+                    <tr><th scope="row">Wilcoxon p</th><td>0.32</td><td>0.11</td></tr>
+                    <tr><th scope="row">Seeds per arm</th><td>10</td><td>10</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </details>
+            <figcaption>Right of zero means that the quantum-assisted network (about 670 parameters) had a lower mean error than a classical network with the same parameter budget. Both intervals include zero (the cavity's only just), and neither Wilcoxon test reaches p&nbsp;&lt;&nbsp;0.05. A 6.7k-parameter classical PINN does better on Burgers (0.095 against 0.156). In the cavity at Re&nbsp;=&nbsp;100, the matched classical network wins from a cold start (0.39 against 0.86), and the quantum-assisted network wins when both are warm-started from Re&nbsp;=&nbsp;10 (0.19 against 0.25). The quantum layer ran only in statevector simulation; no quantum hardware was used.</figcaption>
+            <p class="fsrc">Source: the <a href="https://github.com/thedaemon-wizard/QAPINN-BQP-Challenge/blob/main/results/analysis/significance/headline.csv">significance table</a> and the <a href="https://github.com/thedaemon-wizard/QAPINN-BQP-Challenge">README</a> of the repository.</p>
+          </figure>
+        </li>
+      </ul>
+      <p class="muted after-list">The same method is used for quantum sensing and quantum computing benchmarks. Those results will be listed here as they are published.</p>
+    </div>
+  </section>
+
+  <section id="labels" aria-labelledby="labels-h">
+    <div class="wrap">
+      <h2 id="labels-h">How each claim is labelled</h2>
+      <p>Results and reports carry one of these labels per layer, so a reader can see what kind of evidence stands behind each statement.</p>
+      <dl class="vocab">
+        <dt><span class="tag merged">merged upstream</span></dt>
+        <dd>The change is in the project's main code, and the pull request is linked.</dd>
+        <dt><span class="tag meas">measured</span></dt>
+        <dd>Counted from logs in a stated time window, with the counting script and the counts published. Raw logs that carry credential IDs or host identities are withheld. Nothing is claimed outside that window.</dd>
+        <dt><span class="tag run">running</span></dt>
+        <dd>The component runs in the public testbed at the version pinned in its repository. This shows that it works there, not that it is correct or released.</dd>
+        <dt><span class="tag">official vectors</span></dt>
+        <dd>Output matches test vectors published by the owner of the standard, such as NIST ACVP.</dd>
+        <dt><span class="tag">computed from the spec</span></dt>
+        <dd>Implemented from the specification where no official vectors exist. A passing self-test here is not proof of correctness.</dd>
+        <dt><span class="tag">two implementations agree</span></dt>
+        <dd>Independent implementations produce the same result. This shows consistency, not correctness.</dd>
+        <dt><span class="tag base">classical baseline</span></dt>
+        <dd>Compared with a classical method given the same budget, with seeds and statistics published. The result is reported whichever way it falls.</dd>
+        <dt><span class="tag sim">simulated</span></dt>
+        <dd>Physics or networks are modelled from published data, not measured. The QKD layer of the testbed is simulated.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="not" aria-labelledby="not-h">
+    <div class="wrap">
+      <h2 id="not-h">What this is not</h2>
+      <ul class="nots">
+        <li>Not a consultancy: no advisory engagements, no meetings as a product, no priority support.</li>
+        <li>No certification or compliance statements. A result covers the versions, configuration and time window it names.</li>
+        <li>No quantum hardware. The QKD layer in the testbed is simulated.</li>
+        <li>No claims of quantum advantage.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="next" aria-labelledby="next-h">
+    <div class="wrap">
+      <h2 id="next-h">In preparation</h2>
+      <div class="soon">
+        <p>Re-runnable test reports for the software versions and configurations an organization actually runs, each with a cryptographic bill of materials (CBOM).</p>
+        <p class="muted">Not available yet. The open testbed, the measurements and the upstream work stay public either way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" aria-labelledby="about-h">
+    <div class="wrap">
+      <h2 id="about-h">About</h2>
+      <p>Quantum Daemons is the sole proprietorship of Amon Koike, an independent quantum research engineer in Japan, registered in August 2026. Background in CAE and simulation software.</p>
+      <ul class="record">
+        <li>IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate</li>
+        <li>unitaryHACK 2026: three merged pull requests and two bounties</li>
+        <li>WISER Summer Program 2026, BQP Challenge: finalist</li>
+        <li>Qiskit Advocate since February 2026, and mentor at the Qiskit Global Summer School 2026</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="contact" aria-labelledby="contact-h">
+    <div class="wrap">
+      <h2 id="contact-h">Contact</h2>
+      <ul class="contact">
+        <li>Questions about a result: open an issue on the repository that holds it.</li>
+        <li>Anything else: a message on <a href="https://www.linkedin.com/in/amon-koike-826013300/">LinkedIn</a>.</li>
+        <li>Email: <a href="mailto:amon.koike@daemons.jp">amon.koike@daemons.jp</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
+    <p>Page last reviewed: <span class="placeholder">[date]</span>. Use of AI tools: <span class="placeholder">[note to be decided]</span></p>
+  </div>
+</footer>
+
+<script>
+  // Details for the evidence charts on hover (mouse, pen) and keyboard focus. Every value is also printed and in the table views.
+  (() => {
+    const tip = document.createElement('div');
+    tip.className = 'viz-tip';
+    tip.id = 'viz-tip';
+    tip.setAttribute('role', 'tooltip');
+    tip.hidden = true;
+    document.body.appendChild(tip);
+    const place = (x, y) => {
+      const r = tip.getBoundingClientRect();
+      let left = x + 14, top = y + 16;
+      if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+      if (top + r.height > innerHeight - 8) top = y - r.height - 12;
+      tip.style.left = Math.max(8, left) + 'px';
+      tip.style.top = Math.max(8, top) + 'px';
+    };
+    let focused = null;
+    const placeAt = (el) => { const r = el.getBoundingClientRect(); place(r.left + Math.min(r.width / 2, 160), r.bottom - 10); };
+    for (const el of document.querySelectorAll('[data-tip]')) {
+      el.tabIndex = 0;
+      el.addEventListener('focus', () => {
+        if (!el.matches(':focus-visible')) return; // a mouse click: the hover tooltip already covers it
+        focused = el;
+        tip.textContent = el.dataset.tip;
+        tip.hidden = false;
+        placeAt(el);
+        el.setAttribute('aria-describedby', 'viz-tip');
+      });
+      el.addEventListener('blur', () => { focused = null; tip.hidden = true; el.removeAttribute('aria-describedby'); });
+      el.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'touch') return;
+        tip.textContent = el.dataset.tip;
+        tip.hidden = false;
+        place(e.clientX, e.clientY);
+      });
+      el.addEventListener('pointermove', (e) => { if (!tip.hidden) place(e.clientX, e.clientY); });
+      el.addEventListener('pointerleave', () => { if (focused) { tip.textContent = focused.dataset.tip; placeAt(focused); } else tip.hidden = true; });
+    }
+    // Keep a keyboard-focused tooltip with its row while the page scrolls; hide a hover tooltip.
+    addEventListener('scroll', () => { if (focused) placeAt(focused); else tip.hidden = true; }, { passive: true });
+  })();
+</script>
+
+</body>
+</html>
