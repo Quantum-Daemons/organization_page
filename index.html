@@ -3,11 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- DRAFT (2026-10-25). Before publishing on GitHub Pages: remove the noindex line, fill the two highlighted placeholders in the footer (review date, AI-use note), and consider self-hosting the fonts. Publish the media/ folder (Protocol Lab video as MP4 and WebM, and its poster) next to this file. Chart colours were checked with a palette validator against the panel colour in both themes. -->
-<meta name="robots" content="noindex">
 <title>Quantum Daemons</title>
 <meta name="description" content="Quantum Daemons measures and tests hybrid post-quantum (PQC) and quantum key distribution (QKD) setups in open-source VPN and key-management software, and publishes the code and counting rules behind each result.">
-<!-- Before publishing, consider self-hosting these two font families (privacy for EU visitors). -->
+<link rel="canonical" href="https://quantum.daemons.jp/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Quantum Daemons">
+<meta property="og:title" content="Quantum Daemons: quantum-safe networking, checked in public">
+<meta property="og:description" content="Open PQC + QKD testbed, fixes merged into arnika, and measurements with published counting rules. The QKD layer is simulated.">
+<meta property="og:url" content="https://quantum.daemons.jp/">
+<meta property="og:image" content="https://quantum.daemons.jp/media/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta property="og:image:alt" content="Diagram of the public PQC + QKD testbed: a simulated QKD key source and an ML-KEM-1024 + P-384 hybrid KEM feed arnika, which supplies the pre-shared key for WireGuard wg0 and the post-quantum preshared key (PPK) for strongSwan IKEv2, which also runs ML-KEM-768. Rosenpass keys WireGuard wg1. PPK rotations were measured before and after arnika PR #51.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
@@ -246,7 +254,6 @@
 
   .contact { list-style: none; margin: 8px 0 0; padding: 0; }
   .contact li { margin: 0 0 8px; }
-  .placeholder { background: color-mix(in srgb, var(--fiber) 28%, transparent); padding: 1px 6px; border-radius: 3px; }
 
   .site-foot { margin-top: 88px; padding: 28px 0 40px; border-top: 1px solid var(--rule); font-size: 15px; color: var(--ink-2); }
   .site-foot p { margin: 0 0 6px; max-width: 80ch; }
@@ -654,7 +661,7 @@
 <footer class="site-foot">
   <div class="wrap">
     <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
-    <p>Page last reviewed: <span class="placeholder">Oct 26, 2026</span>. Use of AI tools: <span class="placeholder">Anthropic Claude</span></p>
+    <p>Page last reviewed: 26 October 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
   </div>
 </footer>
 
