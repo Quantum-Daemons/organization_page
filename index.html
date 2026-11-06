@@ -218,7 +218,7 @@
   .forest .axis { margin-right: 0; }
   .fdir { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
   .fdir span:last-child { margin-left: auto; }
-  .evfig video { display: block; width: 100%; max-width: 860px; height: auto; aspect-ratio: 1350 / 958; border-radius: 6px; background: #05080C; }
+  .evfig video { display: block; width: 100%; max-width: 1040px; height: auto; aspect-ratio: 1040 / 694; border-radius: 6px; background: #05080C; }
   .evfig figcaption { margin: 14px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); max-width: 78ch; }
   .evfig figcaption p { margin: 0; }
   .evfig figcaption p + p { margin-top: 8px; }
@@ -498,7 +498,7 @@
         <li>
           <div>
             <h3>The public PQC + QKD testbed</h3>
-            <p>WireGuard with Rosenpass, and strongSwan IKEv2 with ML-KEM-768 and a post-quantum preshared key, with keys from arnika. Source under Apache-2.0.</p>
+            <p>WireGuard with Rosenpass, and strongSwan IKEv2 with ML-KEM-768 and a post-quantum preshared key, with keys from arnika. Own code under Apache-2.0; NOTICE lists the submodules&rsquo; licences.</p>
             <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/">Live testbed</a><a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork">Source</a></p>
           </div>
           <div class="ev"><span class="tag run">running</span><span class="tag sim">QKD simulated</span></div>
@@ -506,25 +506,32 @@
         <li>
           <div>
             <h3>Protocol Lab</h3>
-            <p>Trusted-node QKD key relay, simulated in the browser over five networks described in four journal papers and a preprint: Cambridge, SECOQC Vienna, the Tokyo QKD Network, MadQCI and Thuringia. Reported values and model values sit in separate columns, with the source and licence of each network.</p>
+            <p>Trusted-node QKD key relay, simulated in the browser over five networks described in four journal papers and a preprint: Cambridge, SECOQC Vienna, the Tokyo QKD Network, MadQCI and Thuringia. Each tick plays back in order, so a key can be watched crossing each hop under that hop&rsquo;s pad and appearing in the clear only at the trusted node that relays it. Reported values and model values sit in separate columns, with the source and licence of each network.</p>
             <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/protocol-lab">Open Protocol Lab</a></p>
           </div>
           <div class="ev"><span class="tag sim">simulated</span></div>
           <figure class="evfig" aria-labelledby="fpl-title">
             <div class="fhead">
               <div>
-                <p class="ftitle" id="fpl-title">Re-routing around a link outage in the Cambridge quantum network</p>
-                <p class="fsub">Protocol Lab, recorded in a browser. 19 seconds, no sound.</p>
+                <p class="ftitle" id="fpl-title">A key relayed round a link outage in the Cambridge quantum network</p>
+                <p class="fsub">Protocol Lab, recorded in a browser with the page&rsquo;s WebM export. 20 seconds, no sound.</p>
               </div>
               <div class="ftags"><span class="tag sim">simulated</span></div>
             </div>
-            <video controls preload="none" playsinline width="1350" height="958" poster="media/protocol-lab-cambridge-poster.png" aria-describedby="fpl-cap">
-              <source src="media/protocol-lab-cambridge.mp4" type='video/mp4; codecs="avc1.640028"'>
-              <source src="media/protocol-lab-cambridge.webm" type='video/webm; codecs="vp9"'>
+            <video controls preload="metadata" playsinline width="1040" height="694" aria-describedby="fpl-cap">
+              <source src="media/protocol-lab-20261106-062357Z.webm#t=0.5" type='video/webm; codecs="vp9"'>
               <a href="https://pqc-qkd-hybrid.daemons.jp/protocol-lab">Open Protocol Lab</a>
             </video>
-            <figcaption id="fpl-cap">100G encryptors between TREL and CAPE (two line-card pairs in the paper) use keys from a store that is refilled over one-time-pad tunnels along the active route (thick line). When the CAPE–TREL link goes down (red), the route goes round the ring through ENGI, which acts as a trusted relay; when the link is restored, the route returns. The order of the routes follows Dynes et al., <i>npj Quantum Information</i> 5, 101 (2019), <a href="https://doi.org/10.1038/s41534-019-0221-4">doi:10.1038/s41534-019-0221-4</a>, licensed CC&nbsp;BY&nbsp;4.0. The drawing is this project's layout, and the timing and the rates are simulated.</figcaption>
+            <figcaption id="fpl-cap">A key is requested from TREL to CAPE and first crosses the direct link. When the CAPE&ndash;TREL link goes down (red dashes), the route moves round the ring through ENGI: the key crosses each hop under that hop&rsquo;s one-time pad and is in the clear only at ENGI, the trusted node that relays it (amber). When the link is restored, the route returns. Link lengths, losses and rates follow Dynes et al., <i>npj Quantum Information</i> 5, 101 (2019), <a href="https://doi.org/10.1038/s41534-019-0221-4">doi:10.1038/s41534-019-0221-4</a>, licensed CC&nbsp;BY&nbsp;4.0. The drawing is this project&rsquo;s layout, the request rate is set on the page, and the timing is simulated: the time a key takes on screen is not a latency.</figcaption>
           </figure>
+        </li>
+        <li>
+          <div>
+            <h3>QKD protocols compared</h3>
+            <p>One idealised round of BB84, BBM92 or MDI-QKD at a time, and the three protocols&rsquo; asymptotic key-rate curves against fibre length from the cited papers&rsquo; formulas, next to published results with their conditions. A model, not a measurement, not a finite-key bound and not a ranking of protocols or products.</p>
+            <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/qkd-protocols">Open QKD protocols</a></p>
+          </div>
+          <div class="ev"><span class="tag sim">simulated</span></div>
         </li>
         <li>
           <div>
@@ -661,7 +668,7 @@
 <footer class="site-foot">
   <div class="wrap">
     <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
-    <p>Page last reviewed: 26 October 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
+    <p>Page last reviewed: 6 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
   </div>
 </footer>
 
