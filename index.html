@@ -535,6 +535,14 @@
         </li>
         <li>
           <div>
+            <h3>A verifier for post-quantum certificates, merged at the IETF Hackathon</h3>
+            <p>At the IETF 127 Hackathon (November 2026, remote), a provider for the PQC certificates project, which checks whether post-quantum X.509 certificates made with different libraries work together: an R5 verifier in JavaScript on @noble/post-quantum and 54 test files (ML-DSA, ML-KEM and SLH-DSA certificates and keys). The files pass the project&rsquo;s OpenSSL CI, and <span class="id">openssl verify -x509_strict</span> and pkilint (run locally) report no errors or warnings; at the 14 November master, 748 of the verifier&rsquo;s 752 rows over the other producers&rsquo; R5 zips agree with the other verifiers&rsquo; majority. Test tooling, not a validated cryptographic module.</p>
+            <p class="links"><a href="https://github.com/IETF-Hackathon/pqc-certificates/tree/master/providers/noble-post-quantum">Provider</a><a href="https://github.com/IETF-Hackathon/pqc-certificates/pull/342">PR #342</a><a href="https://github.com/IETF-Hackathon/pqc-certificates/pull/350">PR #350</a></p>
+          </div>
+          <div class="ev"><span class="tag merged">merged upstream</span></div>
+        </li>
+        <li>
+          <div>
             <h3>Merged work in quantum computing software</h3>
             <p>Through unitaryHACK 2026: three merged pull requests (two in NVIDIA CUDA-Q, one in QuEST) and two bounties, $200 in total. CUDA-Q #4693 adds unitary synthesis for 3- to 5-qubit custom operations; QuEST #783 is a GPU optimization.</p>
             <p class="links"><a href="https://github.com/NVIDIA/cuda-quantum/pull/4693">CUDA-Q #4693</a><a href="https://github.com/NVIDIA/cuda-quantum/pull/4751">CUDA-Q #4751</a><a href="https://github.com/QuEST-Kit/QuEST/pull/783">QuEST #783</a><a href="https://unitaryhack.dev/hackers/thedaemon-wizard/">unitaryHACK profile</a></p>
@@ -647,6 +655,7 @@
       <ul class="record">
         <li>IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate</li>
         <li>unitaryHACK 2026: three merged pull requests and two bounties</li>
+        <li>IETF 127 Hackathon: a provider merged into the PQC certificates project</li>
         <li>WISER Summer Program 2026, BQP Challenge: finalist</li>
         <li>Qiskit Advocate since February 2026, and mentor at the Qiskit Global Summer School 2026</li>
       </ul>
@@ -668,7 +677,7 @@
 <footer class="site-foot">
   <div class="wrap">
     <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
-    <p>Page last reviewed: 6 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
+    <p>Page last reviewed: 16 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
   </div>
 </footer>
 
