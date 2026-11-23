@@ -319,14 +319,14 @@
             <rect x="10" y="150" width="290" height="86" rx="6"/>
             <text class="t" x="26" y="180">ML-KEM-1024 + P-384</text>
             <text class="s" x="26" y="204">hybrid KEM through HPKE</text>
-            <text class="s" x="26" y="224">(in arnika PR #51)</text>
+            <text class="s" x="26" y="224">(arnika PR #51, merged)</text>
           </g>
           <g class="node">
             <rect x="385" y="88" width="262" height="120" rx="6"/>
             <text class="t" x="401" y="122">arnika</text>
             <text class="s" x="401" y="146">combines both key sources</text>
             <text class="m" x="401" y="172">HKDF-SHA3-256 (QKD ‖ PQC)</text>
-            <text class="s" x="401" y="196">pinned to a commit of PR #51</text>
+            <text class="s" x="401" y="196">pinned to a commit of main</text>
           </g>
           <g class="node">
             <rect x="740" y="40" width="290" height="86" rx="6"/>
@@ -380,8 +380,8 @@
             <h3>Combined keys</h3>
             <ol>
               <li class="sim"><span class="t">QKD key source</span><span class="s">Simulated link with an ETSI GS QKD 014-style API</span></li>
-              <li><span class="t">ML-KEM-1024 + P-384</span><span class="s">Hybrid KEM through HPKE (in arnika PR #51)</span></li>
-              <li><span class="t">arnika</span><span class="s">Combines both sources with <span class="id">HKDF-SHA3-256 (QKD ‖ PQC)</span>. Pinned to commit <span class="id">f4cf9ba</span> of open PR #51</span></li>
+              <li><span class="t">ML-KEM-1024 + P-384</span><span class="s">Hybrid KEM through HPKE (arnika PR #51, merged on 20 November 2026)</span></li>
+              <li><span class="t">arnika</span><span class="s">Combines both sources with <span class="id">HKDF-SHA3-256 (QKD ‖ PQC)</span>. Pinned to commit <span class="id">0bb8401</span> of its main branch, after PR #51 was merged</span></li>
               <li><span class="t">WireGuard wg0</span><span class="s">Pre-shared key from arnika</span></li>
               <li><span class="t">strongSwan IKEv2</span><span class="s">PPK (RFC 8784) from arnika, plus an ML-KEM-768 additional key exchange (RFC 9370). PPK rotations measured before and after PR #51</span></li>
             </ol>
@@ -400,7 +400,7 @@
           <li><span class="sw sim" aria-hidden="true"></span>simulated</li>
           <li><span class="sw fib" aria-hidden="true"></span>key path</li>
         </ul>
-        <figcaption id="schem-cap">The public testbed. The VPN software, the post-quantum key exchanges and the key derivation run for real; the QKD layer is simulated. arnika runs at a commit from an open upstream pull request (#51), not a release. Live at <a href="https://pqc-qkd-hybrid.daemons.jp/">pqc-qkd-hybrid.daemons.jp</a>.</figcaption>
+        <figcaption id="schem-cap">The public testbed. The VPN software, the post-quantum key exchanges and the key derivation run for real; the QKD layer is simulated. arnika runs at a commit of its main branch (after PR #51 was merged), not a release. Live at <a href="https://pqc-qkd-hybrid.daemons.jp/">pqc-qkd-hybrid.daemons.jp</a>.</figcaption>
       </figure>
     </div>
   </div>
@@ -421,7 +421,7 @@
         <li>
           <div>
             <h3>Before and after: arnika PR #51</h3>
-            <p>PPK rotations on the IPsec (strongSwan) lane, recorded for 168 hours on each side of an open pull request and compared under rules fixed before the runs. The counting script and the counts are published; the container logs, which carry credential IDs and host identities, are withheld. The numbers were posted on the pull request on 12 October 2026.</p>
+            <p>PPK rotations on the IPsec (strongSwan) lane, recorded for 168 hours on each side of a pull request by another contributor (open at the time, merged on 20 November 2026) and compared under rules fixed before the runs. The counting script and the counts are published; the container logs, which carry credential IDs and host identities, are withheld. The numbers were posted on the pull request on 12 October 2026.</p>
             <p class="links"><a href="https://github.com/thedaemon-wizard/pqc-qkd-HybridNetwork/tree/main/docs/measurements/2026-10-ppk-before-after">Measurement report</a><a href="https://github.com/arnika-project/arnika/pull/51#issuecomment-6117990327">Numbers on PR #51</a></p>
           </div>
           <div class="ev"><span class="tag meas">measured</span></div>
@@ -532,6 +532,14 @@
             <p class="links"><a href="https://pqc-qkd-hybrid.daemons.jp/qkd-protocols">Open QKD protocols</a></p>
           </div>
           <div class="ev"><span class="tag sim">simulated</span></div>
+        </li>
+        <li>
+          <div>
+            <h3>QSH: quantum-safe building blocks that run in your browser</h3>
+            <p>A second public demo, open source under Apache-2.0. A hybrid ML-KEM-768 + X25519 key exchange, ML-DSA-65 signatures, garbled-circuit MPC and CKKS homomorphic encryption run in the visitor&rsquo;s browser; the BB84 channel is simulated. On its validations page, the ML-KEM-768 library runs NIST&rsquo;s ACVP cases, and the IKEv2 key derivation (RFC 7296) is checked against NIST CAVP vectors. The RFC 9370 and RFC 8784 layers have no official vectors and are computed from the RFCs.</p>
+            <p class="links"><a href="https://qsmpc-qkd-qhe-ai-hybrid.daemons.jp/validations">Validations page</a><a href="https://github.com/Quantum-Daemons/QSMPC-QKD-QHE-AI-Hybrid">Repository</a></p>
+          </div>
+          <div class="ev"><span class="tag">official vectors</span><span class="tag">computed from the spec</span><span class="tag sim">simulated</span></div>
         </li>
         <li>
           <div>
@@ -678,7 +686,7 @@
 <footer class="site-foot">
   <div class="wrap">
     <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
-    <p>Page last reviewed: 19 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
+    <p>Page last reviewed: 22 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
   </div>
 </footer>
 
