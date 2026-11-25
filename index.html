@@ -293,7 +293,7 @@
       <figure class="schematic" aria-labelledby="schem-cap">
         <svg viewBox="0 0 1040 400" role="img" aria-labelledby="schem-title schem-desc">
           <title id="schem-title">Key paths in the public PQC + QKD testbed</title>
-          <desc id="schem-desc">A simulated QKD key source and an ML-KEM-1024 plus P-384 hybrid KEM both feed arnika, which combines them with HKDF-SHA3-256. arnika supplies the WireGuard wg0 pre-shared key and the IKEv2 post-quantum preshared key used by strongSwan, which also runs an ML-KEM-768 additional key exchange. Separately, Rosenpass keys WireGuard wg1, which runs inside wg0. arnika runs at a commit from its open pull request 51, not a release. PPK rotations on the strongSwan IKEv2 lane were measured before and after that pull request.</desc>
+          <desc id="schem-desc">A simulated QKD key source and an ML-KEM-1024 plus P-384 hybrid KEM both feed arnika, which combines them with HKDF-SHA3-256. arnika supplies the WireGuard wg0 pre-shared key and the IKEv2 post-quantum preshared key used by strongSwan, which also runs an ML-KEM-768 additional key exchange. Separately, Rosenpass keys WireGuard wg1, which runs inside wg0. arnika runs at commit 0bb8401 of its main branch, after pull request 51 was merged, not a release. PPK rotations on the strongSwan IKEv2 lane were measured before and after that pull request.</desc>
 
           <!-- fibers -->
           <path class="fiber" d="M300 83 C 345 83, 340 128, 385 128"/>
@@ -536,10 +536,24 @@
         <li>
           <div>
             <h3>QSH: quantum-safe building blocks that run in your browser</h3>
-            <p>A second public demo, open source under Apache-2.0. A hybrid ML-KEM-768 + X25519 key exchange, ML-DSA-65 signatures, garbled-circuit MPC and CKKS homomorphic encryption run in the visitor&rsquo;s browser; the BB84 channel is simulated. On its validations page, the ML-KEM-768 library runs NIST&rsquo;s ACVP cases, and the IKEv2 key derivation (RFC 7296) is checked against NIST CAVP vectors. The RFC 9370 and RFC 8784 layers have no official vectors and are computed from the RFCs.</p>
+            <p>A second public demo, open source under Apache-2.0. A hybrid ML-KEM-768 + X25519 key exchange, ML-DSA-65 signatures, garbled-circuit MPC and CKKS homomorphic encryption run in the visitor&rsquo;s browser; the BB84 channel is simulated. On its validations page, the ML-KEM-768 library runs NIST&rsquo;s ACVP cases, and the IKEv2 key derivation (RFC 7296) is checked against NIST CAVP vectors. The RFC 9370 and RFC 8784 layers have no official vectors and are computed from the RFCs. The same page checks the demo&rsquo;s own CycloneDX&nbsp;1.7 CBOM against its schema and reads each algorithm against the transition dates in NIST IR 8547 (final, October 2026), year by year from 2026 to 2037.</p>
             <p class="links"><a href="https://qsmpc-qkd-qhe-ai-hybrid.daemons.jp/validations">Validations page</a><a href="https://github.com/Quantum-Daemons/QSMPC-QKD-QHE-AI-Hybrid">Repository</a></p>
           </div>
           <div class="ev"><span class="tag">official vectors</span><span class="tag">computed from the spec</span><span class="tag sim">simulated</span></div>
+          <figure class="evfig" aria-labelledby="fqsh-title">
+            <div class="fhead">
+              <div>
+                <p class="ftitle" id="fqsh-title">The first stages of one cross-bank AML run</p>
+                <p class="fsub">QSH&rsquo;s E2E orchestration page, run from the public demo in a headless browser on 25 November 2026 and recorded in real time. 30 seconds, no sound.</p>
+              </div>
+              <div class="ftags"><span class="tag sim">simulated</span></div>
+            </div>
+            <video controls preload="metadata" playsinline width="1040" height="650" poster="media/qsh-orchestration-20261125-poster.jpg" aria-describedby="fqsh-cap">
+              <source src="media/qsh-orchestration-20261125.webm#t=0.5" type='video/webm; codecs="vp9"'>
+              <a href="https://qsmpc-qkd-qhe-ai-hybrid.daemons.jp/orchestration">Open the E2E orchestration page</a>
+            </video>
+            <figcaption id="fqsh-cap">Bank A and Bank B are notional parties in one browser tab. The handshake (ML-KEM-768 + X25519), the private set intersection and the MPC stages run in the browser; the BB84 decoy-state channel is simulated, and no quantum hardware is involved. The clip shows the first stages of a run that took about 80 seconds in full.</figcaption>
+          </figure>
         </li>
         <li>
           <div>
@@ -650,7 +664,7 @@
     <div class="wrap">
       <h2 id="next-h">In preparation</h2>
       <div class="soon">
-        <p>Re-runnable test reports for the software versions and configurations an organization actually runs, each with a cryptographic bill of materials (CBOM).</p>
+        <p>Re-runnable test reports, run on my own testbed, for the software versions and configurations an organization names, each with a cryptographic bill of materials (CBOM). No access to, or scanning of, the organization&rsquo;s systems.</p>
         <p class="muted">Not available yet. The open testbed, the measurements and the upstream work stay public either way.</p>
       </div>
     </div>
@@ -686,7 +700,7 @@
 <footer class="site-foot">
   <div class="wrap">
     <p>Quantum Daemons, Japan. The open-source work can be supported through <a href="https://github.com/sponsors/Quantum-Daemons">GitHub Sponsors</a>.</p>
-    <p>Page last reviewed: 22 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
+    <p>Page last reviewed: 25 November 2026. Use of AI tools: the text and figures were drafted with Anthropic's Claude and reviewed by me before publishing.</p>
   </div>
 </footer>
 
